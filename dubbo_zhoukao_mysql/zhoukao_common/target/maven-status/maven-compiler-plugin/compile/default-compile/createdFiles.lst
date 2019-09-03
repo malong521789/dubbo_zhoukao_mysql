@@ -1,0 +1,5 @@
+com\zb\service\RpcHouseInforsService.class
+com\zb\util\Page.class
+com\zb\service\RpcHouseTypeService.class
+com\zb\entity\HouseInfors.class
+com\zb\entity\HouseType.class

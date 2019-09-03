@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zb.mapper.HouseInforsMapper">
+    <resultMap id="houseinfors" type="com.zb.entity.HouseInfors">
+        <id property="houseId" column="houseId"></id>
+        <result property="houseDesc" column="houseDesc"></result>
+
+        <result property="monthlyRent" column="monthlyRent"></result>
+        <result property="publishDate" column="publishDate"></result>
+        
+        <association property="houseType" javaType="com.zb.entity.HouseType">
+            <result property="typeId" column="typeId"></result>
+            <result property="typeName" column="typeName"></result>
+        </association>
+
+    </resultMap>
+    <sql id="where_sql">
+            <if test="id!=null and id!=-1">
+                and t.typeId =#{id}
+            </if>
+    </sql>
+    <select id="getHouseInforsInfor" resultMap="houseinfors">
+        select h.*,t.* from houseinfos h,housetype t where h.typeId=t.typeId
+        <include refid="where_sql"></include>
+        order by h.houseId limit #{index},#{size}
+    </select>
+
+    <select id="getHouseInforsCount" resultType="int">
+        select count(1) from houseinfos h,housetype t where h.typeId=t.typeId
+        <include refid="where_sql"></include>
+    </select>
+
+    <insert id="addHouseInforsInfor" parameterType="com.zb.entity.HouseInfors">
+        insert into houseinfos values (null,#{houseDesc},#{houseType.typeId},#{monthlyRent},now())
+    </insert>
+
+    <delete id="deleteHouseInforsInfor" parameterType="int">
+        delete from houseinfos where houseId=#{id}
+    </delete>
+
+    <select id="lookHouseInforsInfor" resultMap="houseinfors">
+        select h.*,t.* from houseinfos h,housetype t where h.typeId=t.typeId and houseId=#{id}
+    </select>
+
+    <update id="updateHouseInforsInfor" parameterType="com.zb.entity.HouseInfors">
+        update houseinfos set houseDesc=#{houseDesc},typeId=#{houseType.typeId},monthlyRent=#{monthlyRent},publishDate=now() where houseId=#{houseId}
+    </update>
+</mapper>  

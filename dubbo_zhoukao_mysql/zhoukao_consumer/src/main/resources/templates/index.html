@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+    <script type="text/javascript" src="/static/js/jquery-1.8.3.js"></script>
+    <script type="text/javascript">
+        /*<![CDATA[*/
+        $(function(){
+            $("#tj").hide();
+            $(".xg").hide();
+            getType();
+            getPage(1);
+            $("#cha").click(function () {
+                getPage(1);
+            })
+            $("#add").click(function () {
+                $("#tj").show();
+
+                $("#bao").click(function () {
+                    addHouseInfors();
+                    $("#tj").hide();
+                })
+                $("#fan").click(function () {
+                    $("#tj").hide();
+                })
+
+            })
+
+            $(".xiu").click(function () {
+                var id=$("#yin").val();
+                doUpdateHouseInfors(id);
+            })
+            $(".fan").click(function () {
+                $(".xg").hide();
+            })
+        });
+
+        function getType() {
+            $.ajax({
+                url:'/show',
+                type:'post',
+                success:function(result){
+                    var obj=$.parseJSON(result);
+                    var html="";
+                    for(var i = 0 ; i<obj.length; i++){
+                        html+='<option value="'+obj[i].typeId+'">'+obj[i].typeName+'</option>'
+                    }
+                    $("#type").append(html);
+                    $("#ty").append(html);
+                    $(".ty").append(html);
+                }
+            }) ;
+        }
+        function getPage(index) {
+            var id=$("#type").val();
+            var param='id='+id+'&index='+index;
+            $.ajax({
+                url:'/person',
+                type:'post',
+                data:param,
+                success:function(result){
+                    var html="";
+
+                    for(var i = 0;i<result.data.length;i++){
+                        var c = result.data[i];
+                        html+="<tr>";
+                        html+="<td>"+c.houseId+"</td>";
+                        html+="<td>"+c.houseDesc+"</td>";
+
+                        if(c.houseType.typeId==1){
+                            html+="<td>三室一厅</td>";
+                        }
+                        if(c.houseType.typeId==2){
+                            html+="<td>一室一厅</td>";
+                        }
+                        if(c.houseType.typeId==3){
+                            html+="<td>三室两厅</td>";
+                        }
+                        if(c.houseType.typeId==4){
+                            html+="<td>二室一厅</td>";
+                        }
+
+                        html+="<td>"+c.monthlyRent+"</td>";
+                        html+="<td>"+c.publishDate+"</td>";
+                        html+='<td><a href="javascript:toUpdateHouseInfors('+(c.houseId)+');">修改 </a>'
+                            +'<a href="javascript:deleteHouseInfors('+(c.houseId)+');"> 删除</a>'
+                            +"</td>";
+                        html+="</tr>";
+                    }
+                    $("#tb").html(html);
+                    $(".head").css("background-color","#DEE1E6");
+                    $("tbody tr:odd").css("background-color","#DEE1E6");
+
+                    html='';
+                    html+='共有'+result.count+'条数据   ';
+                    if(result.index>1){
+                        html+='<a href="javascript:getPage(1);"style="text-decoration: none">&nbsp;&nbsp;&nbsp;&nbsp;首页</a>';
+                        html+='<a href="javascript:getPage('+(result.index-1)+');"style="text-decoration: none">&nbsp;&nbsp;&nbsp;&nbsp;上一页</a>';
+                    }
+
+                    html+=' ['+(result.index)+'/'+(result.total)+']'
+                    if(result.index<result.total){
+                        html+='<a href="javascript:getPage('+(result.index+1)+');" style="text-decoration: none">&nbsp;&nbsp;&nbsp;&nbsp;下一页</a>';
+                        html+='<a href="javascript:getPage('+(result.total)+');"style="text-decoration: none">&nbsp;&nbsp;&nbsp;&nbsp;末页</a>';
+                    }
+                    $('#xia').html(html);
+                }
+
+            })
+        }
+
+        function addHouseInfors() {
+            var houseDesc=$("#name").val();
+            var typeId=$("#ty").val();
+            var monthlyRent=$("#goods").val();
+            var parma={'houseDesc':houseDesc,'id':typeId,'monthlyRent':monthlyRent}
+            $.ajax({
+                url:'/add',
+                type:'post',
+                data:parma,
+                success:function (result) {
+                    if(result==1){
+                        alert("添加成功！")
+                        getPage(1);
+                       $("#name").val('');
+                       $("#ty").val('');
+                       $("#goods").val('');
+                    }
+                }
+            })
+
+        }
+
+        function deleteHouseInfors(houseId) {
+            $.ajax({
+                url:'/del',
+                type:'post',
+                data:'houseId='+houseId,
+                success:function (result) {
+                    if(result==1){
+                        alert("删除成功！");
+                        getPage(1)
+                    }
+                }
+            })
+        }
+
+        function toUpdateHouseInfors(houseId) {
+            $(".xg").show();
+            $.ajax({
+                url:'/look',
+                type:'post',
+                data:'houseId='+houseId,
+                success:function (result) {
+                    var obj=$.parseJSON(result);
+                    for (var i=0;i<obj.length;i++){
+                        var p=obj[i];
+                        $("#yin").val(p.houseId);
+                        $(".name").val(p.houseDesc);
+                        $(".ty").val(p.houseType.typeId);
+                        $(".goods").val(p.monthlyRent);
+                    }
+
+                }
+            })
+
+        }
+
+        function doUpdateHouseInfors(houseId) {
+            $(".xg").hide();
+           var houseDesc=$(".name").val();
+            var tid=$(".ty").val();
+            var monthlyRent=$(".goods").val();
+            var param={'houseDesc':houseDesc,'tid':tid,'monthlyRent':monthlyRent,'houseId':houseId}
+            $.ajax({
+                url:'/update',
+                type:'post',
+                data:param,
+                success:function (result) {
+                    if(result==1){
+                        alert("修改成功！！")
+                        getPage(1)
+                        $(".name").val('');
+                        $(".ty").val('');
+                        $(".goods").val('');
+                    }
+
+                }
+            })
+
+        }
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <center>
+        <div>
+            <h3>房屋信息查询</h3>
+            房屋类型 ：
+            <select id="type">
+                <option value="-1">--请选择--</option>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="查询" id="cha"/>
+            <input type="button" value="添加信息" id="add"/><br/>
+            <br/>
+
+            <table border="1px">
+                <thead>
+                <tr class="head">
+                    <th>房屋编号</th>
+                    <th>房屋描述</th>
+                    <th>户型名称</th>
+                    <th>租金</th>
+                    <th>发布日期</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="tb" style="text-align: center">
+
+                </tbody>
+            </table>
+            <div id="xia"></div>
+        </div>
+
+        <div id="tj">
+            <h4>添加的房屋信息如下：</h4>
+            房屋描述 ：
+            <input type="text" name="name" id="name"/><br/>
+            <br/>
+            户型名称 ：
+            <select id="ty">
+                <option value="-1">--请选择--</option>
+            </select><br/>
+            <br/>
+            租金 ：
+            <input type="text" name="goods" id="goods"/><br/>
+            <br/>
+            <input type="button" value="保存" id="bao"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="返回" id="fan"/><br/>
+        </div>
+
+        <div class="xg">
+            <h4>修改的房屋信息如下：</h4>
+            <input type="hidden" id="yin"/>
+            房屋描述 ：
+            <input type="text" name="name" class="name"/><br/>
+            <br/>
+            户型名称 ：
+            <select class="ty">
+                <option value="-1">--请选择--</option>
+            </select><br/>
+            <br/>
+            租金 ：
+            <input type="text" name="goods" class="goods"/><br/>
+            <br/>
+            <input type="button" value="修改" class="xiu"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="button" value="返回" class="fan"/><br/>
+        </div>
+
+
+    </center>
+</body>
+</html>
